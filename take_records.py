@@ -1,3 +1,5 @@
+import logging
+logging.basicConfig(filename='downloader.log', format='%(asctime)s -  %(message)s', datefmt='%m/%d/%Y %H:%M:%S', level=logging.INFO)
 import requests
 import json
 import os
@@ -7,6 +9,7 @@ import wget
 from colorama import Fore, Back, Style
 from colorama import init
 init()
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -52,18 +55,20 @@ def receive_vrecords(zoom_login, date_start, date_end):
 
 	if vrecords.get('message') is None:
 		if vrecords['total_records'] != 0:
-			print(Fore.BLACK + Back.YELLOW + zoom_login + Style.RESET_ALL + ' - Всего конференций с видеозаписями: ' + str(vrecords['total_records']) + ' шт')	
+
+			print(Fore.BLACK + Back.YELLOW + zoom_login + Style.RESET_ALL + ' ' + config["DATE"]["start"] + ' - ' + config["DATE"]["end"] + ' Конференций с видеозаписями: ' + str(vrecords['total_records']) + ' шт')	
 			
 			if not os.path.exists(save_path + zoom_login):
 				os.mkdir(save_path + zoom_login)
 			
 			for meetings in vrecords['meetings']:
-				print(Fore.BLACK + Back.WHITE + 'Начинаю скачивание файла из конференции ' + meetings['topic'] + Style.RESET_ALL)
+				
+				print(Fore.BLACK + Back.WHITE + 'Начинаю скачивание файла из конференции ' + meetings['topic'] + Style.RESET_ALL)	
 				
 				for recording_file in meetings['recording_files']:
 					
 					if recording_file['file_type'] == 'MP4':
-						
+
 						print('Файл ' + str(recording_file['file_type']) + ' размером ' + str(round(recording_file['file_size']/1000000, 2)) + ' Мб')
 						
 						download_url_api = zoom_api_url + '/recording/download/' + recording_file['id'] + '?access_token=' + zoom_token
@@ -73,6 +78,9 @@ def receive_vrecords(zoom_login, date_start, date_end):
 						wget.download(download_url_api, out=file_name)
 						print('');
 						print(Back.GREEN + 'Файл от ' + str(recording_file['recording_start'][0:10]) + ' ' + str(recording_file['recording_start'][11:13]) + ':' + str(recording_file['recording_start'][14:16]) + ' - загружен' + Style.RESET_ALL)
+						
+						logging.info(zoom_login + ': файл размером ' + str(round(recording_file['file_size']/1000000, 2)) + ' Мб от ' + str(recording_file['recording_start'][0:10]) + ' ' + str(recording_file['recording_start'][11:13]) + ':' + str(recording_file['recording_start'][14:16]) + ' ' + meetings['topic'])
+						
 						time.sleep(3)
 
 		else:
