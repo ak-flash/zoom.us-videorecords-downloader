@@ -1,2 +1,4 @@
 config.ini
 dist
+upx.exe
+take_records.spec

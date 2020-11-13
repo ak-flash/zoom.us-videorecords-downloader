@@ -2,6 +2,8 @@ import requests
 import json
 import os
 import configparser
+import time
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -63,9 +65,10 @@ def receive_vrecords(zoom_login, date_start, date_end):
 						
 						download_url_api = zoom_api_url + '/recording/download/' + recording_file['id'] + '?access_token=' + zoom_token
 						file_url = requests.get(download_url_api, allow_redirects=True)
-						file_name =  save_path + zoom_login + '/' + recording_file['recording_start'][0:10] + ' ' + recording_file['recording_start'][11:13] + '-' + recording_file['recording_start'][14:16] + ' - '+ str(meetings['topic']) + ' - ' + str(recording_file['recording_type']) + '.mp4'
+						file_name =  save_path + zoom_login + '/' + recording_file['recording_start'][0:10] + ' ' + recording_file['recording_start'][11:13] + '-' + recording_file['recording_start'][14:16] + ' - '+ str(meetings['topic'].replace('"', "")) + ' - ' + str(recording_file['recording_type']) + '.mp4'
 						open(file_name, 'wb').write(file_url.content)
 						print('Файл от ' + str(recording_file['recording_start'][0:10]) + ' ' + str(recording_file['recording_start'][11:13]) + ':' + str(recording_file['recording_start'][14:16]) + ' - загружен')
+						time.sleep(3)
 
 		else:
 			print('На логине ' + zoom_login + ' отсутствуют видеозаписи')
@@ -73,7 +76,17 @@ def receive_vrecords(zoom_login, date_start, date_end):
 		print('Ошибка: ' + vrecords['message'])
 
 
-for (each_key, each_val) in config.items("ZOOM_LOGIN"):
-	if each_val == '1':
-		#test_receive_conferences(each_key, from_date, to_date)
-		receive_vrecords(each_key, from_date, to_date)
+if __name__ == '__main__':
+	try:
+		for (each_key, each_val) in config.items("ZOOM_LOGIN"):
+			if each_val == '1':
+				#test_receive_conferences(each_key, from_date, to_date)
+				receive_vrecords(each_key, from_date, to_date)
+	except BaseException:
+		import sys
+		print(sys.exc_info()[0])
+		import traceback
+		print(traceback.format_exc())
+	finally:
+		print("Press Enter to close ...")
+		input()
