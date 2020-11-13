@@ -3,7 +3,10 @@ import json
 import os
 import configparser
 import time
-
+import wget
+from colorama import Fore, Back, Style
+from colorama import init
+init()
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -49,13 +52,13 @@ def receive_vrecords(zoom_login, date_start, date_end):
 
 	if vrecords.get('message') is None:
 		if vrecords['total_records'] != 0:
-			print(zoom_login + ' - Всего конференций с видеозаписями: ' + str(vrecords['total_records']) + ' шт')	
+			print(Fore.BLACK + Back.YELLOW + zoom_login + Style.RESET_ALL + ' - Всего конференций с видеозаписями: ' + str(vrecords['total_records']) + ' шт')	
 			
 			if not os.path.exists(save_path + zoom_login):
 				os.mkdir(save_path + zoom_login)
 			
 			for meetings in vrecords['meetings']:
-				print('Начинаю скачивание файла из конференции ' + meetings['topic'])
+				print(Fore.BLACK + Back.WHITE + 'Начинаю скачивание файла из конференции ' + meetings['topic'] + Style.RESET_ALL)
 				
 				for recording_file in meetings['recording_files']:
 					
@@ -64,10 +67,12 @@ def receive_vrecords(zoom_login, date_start, date_end):
 						print('Файл ' + str(recording_file['file_type']) + ' размером ' + str(round(recording_file['file_size']/1000000, 2)) + ' Мб')
 						
 						download_url_api = zoom_api_url + '/recording/download/' + recording_file['id'] + '?access_token=' + zoom_token
-						file_url = requests.get(download_url_api, allow_redirects=True)
+						#file_url = requests.get(download_url_api, allow_redirects=True)
 						file_name =  save_path + zoom_login + '/' + recording_file['recording_start'][0:10] + ' ' + recording_file['recording_start'][11:13] + '-' + recording_file['recording_start'][14:16] + ' - '+ str(meetings['topic'].replace('"', "")) + ' - ' + str(recording_file['recording_type']) + '.mp4'
-						open(file_name, 'wb').write(file_url.content)
-						print('Файл от ' + str(recording_file['recording_start'][0:10]) + ' ' + str(recording_file['recording_start'][11:13]) + ':' + str(recording_file['recording_start'][14:16]) + ' - загружен')
+						#open(file_name, 'wb').write(file_url.content)
+						wget.download(download_url_api, out=file_name)
+						print('');
+						print(Back.GREEN + 'Файл от ' + str(recording_file['recording_start'][0:10]) + ' ' + str(recording_file['recording_start'][11:13]) + ':' + str(recording_file['recording_start'][14:16]) + ' - загружен' + Style.RESET_ALL)
 						time.sleep(3)
 
 		else:
@@ -78,6 +83,8 @@ def receive_vrecords(zoom_login, date_start, date_end):
 
 if __name__ == '__main__':
 	try:
+		print(Fore.CYAN + 'Author: Andrey Klyausov 2020 ver.1' + Style.RESET_ALL)
+		print('')
 		for (each_key, each_val) in config.items("ZOOM_LOGIN"):
 			if each_val == '1':
 				#test_receive_conferences(each_key, from_date, to_date)

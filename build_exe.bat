@@ -2,6 +2,6 @@
  
 @echo off
  
-echo Don`t forget to install pyinstaller and download UPX compressor!
-pyinstaller take_records.py --onefile --upx-dir=upx-3.96-win64\ --console
+echo Don`t forget to install pyinstaller!
+pyinstaller take_records.py --onefile --console
 pause
