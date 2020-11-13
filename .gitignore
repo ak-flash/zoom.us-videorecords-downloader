@@ -2,3 +2,4 @@ config.ini
 dist
 upx.exe
 take_records.spec
+upx-3.96-win64
